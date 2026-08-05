@@ -39,7 +39,8 @@ def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
     except Exception:
-        base_path = os.path.abspath(".")
+        # base_path = os.path.abspath(".")
+        base_path = os.getcwd()
     return os.path.join(base_path, str(relative_path))
 
 def get_monitor_por_resolucao(width=1360, height=768):
@@ -244,30 +245,30 @@ class Palvclker:
         pyautogui.PAUSE = 0
         pyautogui.FAILSAFE = True
 
-    def setup_tesseract(self):
-        # Garante que o pytesseract localize o executável e a pasta tessdata.
-        if getattr(sys, 'frozen', False):
-            # Executável do PyInstaller (_MEIPASS)
-            base_dir = sys._MEIPASS
-        else:
-            # Ambiente de desenvolvimento (.py)
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-        # Procura a pasta tesseract empacotada no --add-data
-        tesseract_exe = os.path.join(base_dir, "tesseract", "tesseract.exe")
-        tessdata_dir = os.path.join(base_dir, "tesseract", "tessdata")
-        if os.path.exists(tesseract_exe):
-            pytesseract.pytesseract.tesseract_cmd = tesseract_exe
-            os.environ["TESSDATA_PREFIX"] = tessdata_dir
-        else:
-            # Fallback local se não estiver rodando pelo pacote do PyInstaller
-            pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    # def setup_tesseract(self):
+    #     if getattr(sys, 'frozen', False):
+    #             path_sys = Path(sys._MEIPASS)
+    #         else:
+    #             path_sys = Path.cwd()  # Usa o diretório de onde o comando é chamado
+
+    #         tesseract_exe = path_sys / "tesseract" / "tesseract.exe"
+    #         tessdata_dir = path_sys / "tesseract" / "tessdata"
+    #     # Procura a pasta tesseract empacotada no --add-data
+    #     tesseract_exe = os.path.join(base_dir, "tesseract", "tesseract.exe")
+    #     tessdata_dir = os.path.join(base_dir, "tesseract", "tessdata")
+    #     if os.path.exists(tesseract_exe):
+    #         pytesseract.pytesseract.tesseract_cmd = tesseract_exe
+    #         os.environ["TESSDATA_PREFIX"] = tessdata_dir
+    #     else:
+    #         # Fallback local se não estiver rodando pelo pacote do PyInstaller
+    #         pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     
     def setup_tesseract(self):
-        # 1. Define o diretório base (PyInstaller ou Script normal)
+        # 1. Define o diretório base (PyInstaller ou Diretório de Execução Atual)
         if getattr(sys, 'frozen', False):
             path_sys = Path(sys._MEIPASS)
         else:
-            path_sys = Path(__file__).resolve().parent
+            path_sys = Path.cwd()  # Usa a raiz de execução do terminal
         # 2. Define os caminhos prioritários (pasta local do projeto)
         tesseract_exe = path_sys / "tesseract" / "tesseract.exe"
         tessdata_dir = path_sys / "tesseract" / "tessdata"
