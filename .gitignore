@@ -33,3 +33,5 @@ ios/build/
 Thumbs.db
 .vscode/
 .idea/
+
+.gitignore
