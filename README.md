@@ -30,7 +30,10 @@ pip install git+https://github.com/davigopi/manip_desktop_dgp.git
 
 
 ```
-pip install --upgrade git+https://github.com/davigopi/manip_desktop_dgp.git
+pip install --force-reinstall git+https://github.com/davigopi/manip_desktop_dgp.git
+ou
+pip install --upgrade --no-cache-dir git+https://github.com/davigopi/manip_desktop_dgp.git
+
 ```
 
 ---
