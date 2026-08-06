@@ -16,90 +16,8 @@ A biblioteca reúne diversas funções utilizadas em automações Windows, como:
 
 # Tutorial de Instalação
 
-## 1. Criar o repositório
 
-Crie um repositório no GitHub.
-
-Exemplo:
-
-https://github.com/davigopi/manip_desktop_dgp
-
-Depois envie todos os arquivos do projeto.
-
----
-
-## 2. Estrutura do projeto
-
-A estrutura recomendada é:
-
-```
-
-manip_desktop_dgp/
-
-├── manip_desktop_dgp.py
-├── pyproject.toml
-├── README.md
-├── LICENSE
-└── img/
-├── capturadas/
-└── ...
-
-```
-
----
-
-## 3. Criar o arquivo pyproject.toml
-
-Exemplo:
-
-```toml
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "manip_desktop_dgp"
-version = "0.1.0"
-
-dependencies = [
-    "numpy",
-    "opencv-python",
-    "pyautogui",
-    "psutil",
-    "mss",
-    "pytesseract",
-    "Pillow"
-]
-
-[tool.setuptools]
-py-modules = ["manip_desktop_dgp"]
-```
-
----
-
-# 4. Publicar no GitHub
-
-Após criar o projeto:
-
-```
-git init
-
-git add .
-
-git commit -m "Primeira versão"
-
-git branch -M main
-
-git remote add origin https://github.com/davigopi/manip_desktop_dgp.git
-
-git push -u origin main
-```
-
----
-
-# 5. Instalar em qualquer computador
-
-Execute:
+# 1. Instalar em qualquer computador
 
 
 ```
@@ -108,19 +26,8 @@ pip install git+https://github.com/davigopi/manip_desktop_dgp.git
 
 ---
 
-# 6. Atualizar para a última versão
+# 2. Atualizar para a última versão
 
-Sempre que fizer alterações:
-
-```
-git add .
-
-git commit -m "Nova versão"
-
-git push
-```
-
-Nos computadores que utilizam a biblioteca:
 
 ```
 pip install --upgrade git+https://github.com/davigopi/manip_desktop_dgp.git
@@ -128,7 +35,7 @@ pip install --upgrade git+https://github.com/davigopi/manip_desktop_dgp.git
 
 ---
 
-# 7. Importando no projeto
+# 3. Importando no projeto
 
 ```python
 from manip_desktop_dgp import ImageManip
@@ -138,7 +45,7 @@ from manip_desktop_dgp import Palvclker
 
 ---
 
-# 8. Exemplo de utilização
+# 4. Exemplo de utilização
 
 ## Localizar uma imagem
 
