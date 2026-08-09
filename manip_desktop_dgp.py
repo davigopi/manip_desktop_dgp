@@ -36,18 +36,20 @@ pip install opencv-python==4.8.1.78
 
 
 '''
-def print_padao(texto_1=None, texto_2=None, titulo=None, rodape=None):     
-    if texto_1 and "_|" in texto_1:
-        palv_1, palv_2 = texto_1.split("_|")
-        texto_1 = f'{palv_1:.<14} | {palv_2:.<23}' 
-    if titulo:
-        print(f'\n{50*"#"}\n{titulo} \n{50*"_"}')
-    elif rodape:
-        print(f'{50*"="}')
-    elif texto_2:
-        print(f"{texto_1:.<40} | {texto_2}")
-    else:
-        print(f"{texto_1:.<40}")
+def print_padao(texto_1=None, texto_2=None, titulo=None, rodape=None): 
+    global salvar_imagens
+    if salvar_imagens:    
+        if texto_1 and "_|" in texto_1:
+            palv_1, palv_2 = texto_1.split("_|")
+            texto_1 = f'{palv_1:.<14} | {palv_2:.<23}' 
+        if titulo:
+            print(f'\n{50*"#"}\n{titulo} \n{50*"_"}')
+        elif rodape:
+            print(f'{50*"="}')
+        elif texto_2:
+            print(f"{texto_1:.<40} | {texto_2}")
+        else:
+            print(f"{texto_1:.<40}")
 
 def resource_path(relative_path):
     if getattr(sys, 'frozen', False):
