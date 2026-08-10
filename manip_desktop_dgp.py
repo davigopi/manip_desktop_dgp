@@ -201,10 +201,15 @@ class ImageManip:
                         salve_tela(dict_arqs[nome_arq], nome_arq)
                     dict_arqs_find = set_imgs_find(self.name_arq, 2, 30)
                     for name_arq, arq_find in dict_arqs_find.items():
-                        h, w = arq_find.shape[:2]
+                        # Evita erro caso a imagem procurada seja maior que a região da tela
+                        if arq_find.shape[0] > dict_arqs['img_tela_gray'].shape[0] or \
+                        arq_find.shape[1] > dict_arqs['img_tela_gray'].shape[1]:
+                            continue
                         res = cv2.matchTemplate(dict_arqs['img_tela_gray'], arq_find, cv2.TM_CCOEFF_NORMED)
                         locais = np.where(res >= confidence)
-                        for x, y in zip(*locais[::-1]):
+                        if len(locais[0]) > 0:
+                            x, y = locais[1][0], locais[0][0]
+                            h, w = arq_find.shape[:2]
                             x_img = int(region["left"] + x + w // 2)
                             y_img = int(region["top"] + y + h // 2)
                             print_padao(texto_1=f'Imagem {self.name_arq} encontra na tela {name_arq} valores X: {x_img} e Y:{y_img}')
@@ -220,25 +225,50 @@ class ImageManip:
                         return ponto.x, ponto.y
                 else:
                     raise Exception(f'Valor inválido do método {self.metodo}.')
-                print_padao(texto_1=f'Imagem {self.name_arq} não encontrada {self.metodo}')
+                # --- FLUXO DE FALHA DE BUSCA (Roda se não deu return no if acima) ---
+                confidence -= self.reduce_confidence
+                confidence = round(confidence, 2)
+
+                if confidence <= confidence_print:
+                    print(f'\rImg: {self.name_arq} | Confid: {confidence}', end='')
+                    confidence_print -= 0.1
+
+                if confidence <= confidence_minima:
+                    if count >= n_tentativas:
+                        return None, None
+                    count += 1
+                    confidence = 0.95
+                    confidence_print = 1
+
+                sleep(0.05)  # Pausa no fluxo normal para liberar CPU
+
             except NameError as e:
                 print(f'\rImg: {self.name_arq} não existe | Erro: ({type(e).__name__}).', end='')
                 return None, None
 
             except Exception as e:
-                confidence -= self.reduce_confidence
-                confidence = round(confidence, 2)
-                if confidence <= confidence_print:
-                    # arq = resource_path(os.path.join('img', self.name_arq))
-                    print(f'\rImg: {self.name_arq} | Confid: {confidence} | Erro: ({type(e).__name__}).', end='')
-                    confidence_print -= 0.1
-                if confidence <= confidence_minima:
-                    if count >= n_tentativas:
-                        # input(f'A imagem não foi encontrada {self.arq}')
-                        return None, None
-                    count += 1
-                    confidence = 1
-                sleep(0.05)
+                print(f'\nErro inesperado: {type(e).__name__} - {e}')
+                return None, None
+            #     print_padao(texto_1=f'Imagem {self.name_arq} não encontrada {self.metodo}')
+            # except NameError as e:
+            #     print(f'\rImg: {self.name_arq} não existe | Erro: ({type(e).__name__}).', end='')
+            #     return None, None
+
+            # except Exception as e:
+            #     confidence -= self.reduce_confidence
+            #     confidence = round(confidence, 2)
+            #     if confidence <= confidence_print:
+            #         # arq = resource_path(os.path.join('img', self.name_arq))
+            #         print(f'\rImg: {self.name_arq} | Confid: {confidence} | Erro: ({type(e).__name__}).', end='')
+            #         confidence_print -= 0.1
+            #     if confidence <= confidence_minima:
+            #         if count >= n_tentativas:
+            #             # input(f'A imagem não foi encontrada {self.arq}')
+            #             return None, None
+            #         count += 1
+            #         confidence = 1
+            #     sleep(0.05)
+
         
 
 class Palvclker:
