@@ -162,9 +162,9 @@ def get_tela_img(region):
     dict_arqs['img_tela_gray'] = cv2.cvtColor(dict_arqs['img_tela_bgr'], cv2.COLOR_BGR2GRAY)
     return dict_arqs
    
-def set_imgs_find(name_arq, fator, porcentagem) :  
+def set_imgs_find(palv, fator, porcentagem) :  
     dict_arqs_find = {} 
-    arq = resource_path(os.path.join('img', name_arq))
+    arq = resource_path(os.path.join('img', palv))
     img_find = cv2.imread(arq, cv2.IMREAD_GRAYSCALE)
     if img_find is None or img_find.size == 0:
         print_padao(texto_1=f"Erro ao carregar tela: {img}")
@@ -180,7 +180,7 @@ def set_imgs_find(name_arq, fator, porcentagem) :
 class ImageManip:
     def __init__(self, *args, **kwargs) -> None:
         # self.arq = kwargs.get("path_img")
-        self.name_arq = kwargs.get("name_arq")
+        self.palv = kwargs.get("palv")
         self.reduce_confidence = kwargs.get("reduce_confidence", 0.05)
         self.metodo = "mss_image"
         setup_tesseract()
@@ -193,14 +193,16 @@ class ImageManip:
         count = 1
         n_tentativas = 2
         region, region_list = define_region()
+        if not self.palv:
+            raise Exception(f'Não informado palavra da imagem {self.palv}.')
         while True:
             try:
                 if self.metodo == "mss_image":
                     dict_arqs = get_tela_img(region)
                     for nome_arq in dict_arqs:
                         salve_tela(dict_arqs[nome_arq], nome_arq)
-                    dict_arqs_find = set_imgs_find(self.name_arq, 2, 30)
-                    for name_arq, arq_find in dict_arqs_find.items():
+                    dict_arqs_find = set_imgs_find(self.palv, 2, 30)
+                    for palv, arq_find in dict_arqs_find.items():
                         # Evita erro caso a imagem procurada seja maior que a região da tela
                         if arq_find.shape[0] > dict_arqs['img_tela_gray'].shape[0] or \
                         arq_find.shape[1] > dict_arqs['img_tela_gray'].shape[1]:
@@ -212,13 +214,13 @@ class ImageManip:
                             h, w = arq_find.shape[:2]
                             x_img = int(region["left"] + x + w // 2)
                             y_img = int(region["top"] + y + h // 2)
-                            print_padao(texto_1=f'Imagem {self.name_arq} encontra na tela {name_arq} valores X: {x_img} e Y:{y_img}')
+                            print_padao(texto_1=f'Imagem {self.palv} encontra na tela {palv} valores X: {x_img} e Y:{y_img}')
                             return x_img, y_img
-                        salve_tela(arq_find, name_arq+'_nao_encontrado')
+                        salve_tela(arq_find, palv+'_nao_encontrado')
                     chave, valor = next(iter(dict_arqs_find.items()))
                     salve_tela(valor, chave+'_nao_encontrado')
                 elif self.metodo == "pyautogui":
-                    arq = resource_path(os.path.join('img', self.name_arq))
+                    arq = resource_path(os.path.join('img', self.palv))
                     box = list(pyautogui.locateAllOnScreen(arq, confidence=confidence, region=region_list))
                     if box:
                         ponto = pyautogui.center(box[0])
@@ -230,7 +232,7 @@ class ImageManip:
                 confidence = round(confidence, 2)
 
                 if confidence <= confidence_print:
-                    print(f'\rImg: {self.name_arq} | Confid: {confidence}', end='')
+                    print(f'\rImg: {self.palv} | Confid: {confidence}', end='')
                     confidence_print -= 0.1
 
                 if confidence <= confidence_minima:
@@ -243,23 +245,23 @@ class ImageManip:
                 sleep(0.05)  # Pausa no fluxo normal para liberar CPU
 
             except NameError as e:
-                print(f'\rImg: {self.name_arq} não existe | Erro: ({type(e).__name__}).', end='')
+                print(f'\rImg: {self.palv} não existe | Erro: ({type(e).__name__}).', end='')
                 return None, None
 
             except Exception as e:
                 print(f'\nErro inesperado: {type(e).__name__} - {e}')
                 return None, None
-            #     print_padao(texto_1=f'Imagem {self.name_arq} não encontrada {self.metodo}')
+            #     print_padao(texto_1=f'Imagem {self.palv} não encontrada {self.metodo}')
             # except NameError as e:
-            #     print(f'\rImg: {self.name_arq} não existe | Erro: ({type(e).__name__}).', end='')
+            #     print(f'\rImg: {self.palv} não existe | Erro: ({type(e).__name__}).', end='')
             #     return None, None
 
             # except Exception as e:
             #     confidence -= self.reduce_confidence
             #     confidence = round(confidence, 2)
             #     if confidence <= confidence_print:
-            #         # arq = resource_path(os.path.join('img', self.name_arq))
-            #         print(f'\rImg: {self.name_arq} | Confid: {confidence} | Erro: ({type(e).__name__}).', end='')
+            #         # arq = resource_path(os.path.join('img', self.palv))
+            #         print(f'\rImg: {self.palv} | Confid: {confidence} | Erro: ({type(e).__name__}).', end='')
             #         confidence_print -= 0.1
             #     if confidence <= confidence_minima:
             #         if count >= n_tentativas:
@@ -332,7 +334,7 @@ class Palvclker:
 
 if __name__ == '__main__':
     palv = 'pacotes'
-    name_arq = 'fogo.png'
+    palv = 'fogo.png'
     list_psm = [11]
     confidence = 0.1
     salvar_imagens = True
@@ -340,8 +342,8 @@ if __name__ == '__main__':
     region, region_list = define_region()
 
     imageManip = ImageManip()
-    print_padao(titulo=f'Pasta local: {name_arq}')
-    imageManip.name_arq = name_arq
+    print_padao(titulo=f'Pasta local: {palv}')
+    imageManip.palv = palv
     imageManip.reduce_confidence = confidence
     x, y = imageManip.locate_x_y
     if not x or not y:
@@ -353,7 +355,7 @@ if __name__ == '__main__':
         clk_x_y(x, y)
 
     palvclker = Palvclker()
-    dados = palvclker.get_todos_dados(list_psm=list_psm, opcao='all', limit_caracter=2)
+    dados = palvclker.get_todos_dados(list_psm=list_psm, opcao='grayClr', limit_caracter=2)
     print_padao(titulo=f'Palavra que sera porcurado é: {palv}')
     list_palv = []
     encontrado = False
