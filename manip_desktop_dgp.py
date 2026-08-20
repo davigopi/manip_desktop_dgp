@@ -3,39 +3,18 @@
 
 import numpy as np
 import pyautogui
-# import psutil
 import cv2
-# import mss
 from mss import MSS
 import os
 import sys
 import pytesseract
-# import signal  # interface gerenciador do sistema operacional
 from time import sleep
-# from PIL import Image  # pip install Pillow
 from pathlib import Path
 
 salvar_imagens = False
 pyautogui.PAUSE = 0
 pyautogui.FAILSAFE = True
 
-# from src.exceptions import BlockExecution, ContinueFindSpecification, EndFindSpecification
-# pip install Pillow
-# import pyscreeze
-
-''' obs: o python 3.14 da erro no pacote ainda nao funciona 11/2025
-pip install numpy==1.26.4
-pip install pyautogui opencv-python numpy
-pip install pyautogui opencv-python pillow numpy
-pip install psutil
-pip install mss
-pip install pytesseract
-
-pip install opencv-python ->em alguns programa usa confidencialidade  CV2
-pip install opencv-python==4.8.1.78
-
-
-'''
 def print_padao(texto_1=None, texto_2=None, titulo=None, rodape=None):
     global salvar_imagens
     if salvar_imagens:
@@ -57,11 +36,6 @@ def resource_path(relative_path):
     else:
         path_sys = Path.cwd()
     return path_sys / relative_path
-    # try:
-    #     path_sys = sys._MEIPASS
-    # except Exception:
-    #     path_sys = os.getcwd()
-    # return os.path.join(path_sys, str(relative_path))
 
 def salve_tela(tela, nome_arq):
     global salvar_imagens
@@ -179,12 +153,10 @@ def set_imgs_find(palv, fator, porcentagem) :
 
 class ImageManip:
     def __init__(self, *args, **kwargs) -> None:
-        # self.arq = kwargs.get("path_img")
         self.palv = kwargs.get("palv")
         self.reduce_confidence = kwargs.get("reduce_confidence", 0.05)
         self.metodo = "mss_image"
         setup_tesseract()
-
     @property
     def locate_x_y(self):
         confidence = 0.95
@@ -230,47 +202,22 @@ class ImageManip:
                 # --- FLUXO DE FALHA DE BUSCA (Roda se não deu return no if acima) ---
                 confidence -= self.reduce_confidence
                 confidence = round(confidence, 2)
-
                 if confidence <= confidence_print:
                     print(f'\rImg: {self.palv} | Confid: {confidence}', end='')
                     confidence_print -= 0.1
-
                 if confidence <= confidence_minima:
                     if count >= n_tentativas:
                         return None, None
                     count += 1
                     confidence = 0.95
                     confidence_print = 1
-
-                sleep(0.05)  # Pausa no fluxo normal para liberar CPU
-
+                sleep(0.05)     # Pausa no fluxo normal para liberar CPU
             except NameError as e:
                 print(f'\rImg: {self.palv} não existe | Erro: ({type(e).__name__}).', end='')
                 return None, None
-
             except Exception as e:
                 print(f'\nErro inesperado: {type(e).__name__} - {e}')
                 return None, None
-            #     print_padao(texto_1=f'Imagem {self.palv} não encontrada {self.metodo}')
-            # except NameError as e:
-            #     print(f'\rImg: {self.palv} não existe | Erro: ({type(e).__name__}).', end='')
-            #     return None, None
-
-            # except Exception as e:
-            #     confidence -= self.reduce_confidence
-            #     confidence = round(confidence, 2)
-            #     if confidence <= confidence_print:
-            #         # arq = resource_path(os.path.join('img', self.palv))
-            #         print(f'\rImg: {self.palv} | Confid: {confidence} | Erro: ({type(e).__name__}).', end='')
-            #         confidence_print -= 0.1
-            #     if confidence <= confidence_minima:
-            #         if count >= n_tentativas:
-            #             # input(f'A imagem não foi encontrada {self.arq}')
-            #             return None, None
-            #         count += 1
-            #         confidence = 1
-            #     sleep(0.05)
-
 
 
 class Palvclker:
@@ -333,14 +280,12 @@ class Palvclker:
 
 
 if __name__ == '__main__':
-    palv = 'pacotes'
-    palv = 'fogo.png'
+    palv = 'google'
+    palv = 'gmail.png'
     list_psm = [11]
     confidence = 0.1
     salvar_imagens = True
-
     region, region_list = define_region()
-
     imageManip = ImageManip()
     print_padao(titulo=f'Pasta local: {palv}')
     imageManip.palv = palv
@@ -353,21 +298,17 @@ if __name__ == '__main__':
         print_padao(rodape=True)
         print(x, y)
         clk_x_y(x, y)
-
     palvclker = Palvclker()
     dados = palvclker.get_todos_dados(list_psm=list_psm, opcao='grayClr', limit_caracter=2)
     print_padao(titulo=f'Palavra que sera porcurado é: {palv}')
     list_palv = []
     encontrado = False
     for key_1, value_2 in dados.items():
-        # print("", key_1, value_2)
         key_palavra, _ = key_1.split("_|")
         if key_palavra not in list_palv:
             list_palv.append(key_palavra)
-
         if '_|' in palv:
             palv_1, palv_2 = palv.split("_|")
-
             if palv_1 in key_1 and palv_2 in key_1:
                 print_padao(texto_1=key_1, texto_2=value_2)
                 encontrado = True
@@ -375,11 +316,9 @@ if __name__ == '__main__':
             if palv in key_1:
                 print_padao(texto_1=key_1, texto_2=value_2)
                 encontrado = True
-
     if not encontrado:
         print_padao(texto_1=f'\nPalavra {palv} não encontrada na tela, lista: {list_palv}.')
     print_padao(rodape=True)
-
     x, y = pyautogui.position()
     print_padao(titulo=f'Possição do mouse : X: {x}, Y: {y}. Palavra(s) próxima(s):')
     for key_1, value_2 in dados.items():
@@ -393,42 +332,3 @@ if __name__ == '__main__':
             continue
         print_padao(texto_1=key_1, texto_2=value_2)
     print_padao(rodape=True)
-
-
-
-# class ProgramManip():
-#     def __init__(self, program) -> None:
-#         self.program = program
-#         self.name_program =  os.path.splitext(self.program.lower())[0]
-
-#     def close(self):
-#         # programaAberto = self.program in (i.name() for i in psutil.process_iter())
-#         programaAberto = any(self.name_program in (p.name() or "").lower() for p in psutil.process_iter(['name']))
-#         if not programaAberto:
-#             print("Programa não está aberto:", self.program)
-#             return
-
-#         '''# listar de dicionarios dos processos aberto no S.O.'''
-#         list_pid_name = [p.info for p in psutil.process_iter(attrs=['pid', 'name']) if self.name_program in (p.info['name'] or "").lower()]
-#         if not list_pid_name:
-#             print("Nenhum processo encontrado para fechar:", self.program)
-#             return
-
-#         for dicionarioPidName in list_pid_name:
-#             pid = dicionarioPidName['pid']  # seleciona apenas os pid
-#             os.kill(pid, signal.SIGTERM)  # fecha prog atravez do seu pid,
-
-#     def open(self, what):
-#         for _ in range(3):
-#             os.startfile(what)
-#             print(f'Tentar abrir o programa: {self.name_program}')
-#             for _ in range(3):
-#                 # programaAberto = self.program in (i.name() for i in psutil.process_iter())
-#                 programaAberto = any(self.name_program in (p.name() or "").lower() for p in psutil.process_iter(['name']))
-#                 if programaAberto:
-#                     return True
-#                 print(f"Nenhum processo {self.program} encontrado, repetir para tentar abrir. \n")
-#                 sleep(1)
-#         for p in psutil.process_iter(['name']):
-#             print(p.name())
-#         return False
