@@ -82,7 +82,7 @@ def get_monitor(width=None, height=None, index_nonitor=1):
     return region
 
 def get_monitor_by_size(width, height):
-  # with garante que os instância do capturador de img da biblioteca mss sejam liberados de forma correta ao finalizar o bloco.
+  # with garante que os instância do capturador de img da biblioteca MSS sejam liberados de forma correta ao finalizar o bloco.
   with MSS() as sct:
     monitores = sct.monitors[1:]
     for monitor in monitores:
@@ -93,7 +93,7 @@ def get_monitor_by_size(width, height):
     return monitores[0]
 
 def get_monitor_by_index(index_nonitor):
-    with mss() as sct:
+    with MSS() as sct:
         if 1 <= index_nonitor < len(sct.monitors):
             return sct.monitors[index_nonitor]
         return sct.monitors[1]
@@ -259,7 +259,7 @@ class ImageManip:
                 return None, None
 
 class Palvclker:
-    def get_todos_dados(self, list_psm=[3, 6, 11, 12], opcao='all', conf_min=0, limit_caracter=2, scale=2, width=None, height=None, index_nonitor=1, get_img='mss'):
+    def get_todos_dados(self, list_psm=[3, 6, 11, 12], opcao='all', conf_min=0, limit_caracter=2, scale=2, width=None, height=None, index_nonitor=1, get_img='MSS'):
         setup_tesseract()
         region = get_monitor(width, height, index_nonitor)
         region['scale'] = scale
