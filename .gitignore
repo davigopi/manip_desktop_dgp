@@ -14,6 +14,7 @@ dist/
 senha.txt
 requirements.txt
 requirements_generator.py
+img/capturadas/*.*
 
 # ==========================================
 # REGRAS DE REACT NATIVE / NODE / JAVASCRIPT
