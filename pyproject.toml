@@ -5,20 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "manip_desktop_dgp"
 version = "0.1.0"
-<<<<<<< HEAD
-dependencies = [
-    mss==10.2.0
-    numpy==2.5.2
-    opencv_python==5.0.0.93
-    pyautogui==0.9.54
-    pytesseract==0.3.13
-]
-
-[tool.setuptools]
-py-modules = ["manip_desktop_dgp"]
-=======
 dependencies = []
 
 [tool.setuptools]
 py-modules = ["manip_desktop_dgp"]
->>>>>>> db368541d121c0e314a215d084879b51252f36ee
