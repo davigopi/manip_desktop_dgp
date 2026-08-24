@@ -1,26 +1,19 @@
 # ==========================================
 # REGRAS DE PYTHON
 # ==========================================
-<<<<<<< HEAD
 .venv/
-=======
->>>>>>> db368541d121c0e314a215d084879b51252f36ee
 venv/
 env/
 .env
 __pycache__/
 *.pyc
 *.pyo
-<<<<<<< HEAD
 *.egg-info/
 build/
 dist/
 senha.txt
 requirements.txt
 requirements_generator.py
-=======
-senha.txt
->>>>>>> db368541d121c0e314a215d084879b51252f36ee
 
 # ==========================================
 # REGRAS DE REACT NATIVE / NODE / JAVASCRIPT
@@ -46,8 +39,3 @@ ios/build/
 Thumbs.db
 .vscode/
 .idea/
-<<<<<<< HEAD
-=======
-
-.gitignore
->>>>>>> db368541d121c0e314a215d084879b51252f36ee
