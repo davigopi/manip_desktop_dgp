@@ -8,6 +8,7 @@ import cv2
 from mss import MSS
 import os
 import sys
+import time
 import pytesseract
 from time import sleep
 from pathlib import Path
@@ -341,7 +342,7 @@ if __name__ == '__main__':
     palvclker = Palvclker()
     palv = 'acotes'
     print_padao(titulo=f'Palavra a porcura: {palv}')
-    dados = palvclker.get_todos_dados(list_psm=[11], opcao='contrEsc3', width=1360, height=768, get_img='pil', limit_caracter=2)
+    dados = palvclker.get_todos_dados(list_psm=[11], opcao='grayClahe', width=1360, height=768, get_img='pil', limit_caracter=2)
     list_palv = []
     encontrado = False
     for key_1, value_2 in dados.items():
@@ -365,6 +366,7 @@ if __name__ == '__main__':
     print_padao(rodape=True)
 
     # palavra perto da posição do mouse
+    time.sleep(3)
     x, y = pyautogui.position()
     print_padao(titulo=f'Possição do mouse : X: {x}, Y: {y}. Palavra(s) próxima(s) a direitra do mouse:')
     for key_1, value_2 in dados.items():

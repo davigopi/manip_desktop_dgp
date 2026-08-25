@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 TUTORIAL: CRIAR E CENTRALIZAR A BIBLIOTECA E COMANDO CLI (manip_desktop_dgp)
 ===============================================================================
 ---------------------------------------------------------
@@ -7,8 +6,8 @@ TUTORIAL: CRIAR E CENTRALIZAR A BIBLIOTECA E COMANDO CLI (manip_desktop_dgp)
 Crie uma pasta com o nome manip_desktop_dgp e coloque os dois arquivos dentro dela:
 ```
 manip_desktop_dgp/
-    ├── manip_desktop_dgp.py      
-    ├── pyproject.toml   
+    ├── manip_desktop_dgp.py
+    ├── pyproject.toml
     ├── README.md
     ├── LICENSE (Opcional)
     ├── .gitignore
@@ -59,7 +58,7 @@ pip install -r venv\Lib\site-packages\manip_desktop_dgp\requirements.txt
 ---------------------------------------------------------
 - Via importação dentro de scripts Python futuros:
 ```python
-from manip_desktop_dgp import Manip_Desktop_Dgp
+from manip_desktop_dgp import ImageManip, Palvclker
 ```
 ```python
 import manip_desktop_dgp
@@ -294,4 +293,3 @@ Davi Pinheiro
 GitHub
 
 https://github.com/davigopi
->>>>>>> db368541d121c0e314a215d084879b51252f36ee
