@@ -272,17 +272,14 @@ class ImageManip:
                         if arq_find.shape[0] > dict_arqs['img_gray'].shape[0] or \
                         arq_find.shape[1] > dict_arqs['img_gray'].shape[1]:
                             continue
-                        escala_atual = 1.0 if nome_arq in ['img', 'img_cv', 'gray'] else region.get('scale', 2)
-                        res = cv2.matchTemplate(dict_arqs[nome_arq], arq_find, cv2.TM_CCOEFF_NORMED)
+                        res = cv2.matchTemplate(dict_arqs['img_gray'], arq_find, cv2.TM_CCOEFF_NORMED)
                         locais = np.where(res >= confidence)
                         if len(locais[0]) > 0:
                             x, y = locais[1][0], locais[0][0]
                             h, w = arq_find.shape[:2]
-                            x_real = (x + w // 2) / escala_atual
-                            y_real = (y + h // 2) / escala_atual
-                            x_img = int(region["left"] + x_real)
-                            y_img = int(region["top"] + y_real)
-                            print_padao(texto_1=f'Imagem {palv} encontrada na img {nome_arq} valores X: {x_img} e Y:{y_img}')
+                            x_img = int(region["left"] + x + w // 2)
+                            y_img = int(region["top"] + y + h // 2)
+                            print_padao(texto_1=f'Imagem {palv} encontra na img {palv} valores X: {x_img} e Y:{y_img}')
                             return x_img, y_img
                         salve_img(arq_find, palv+'_nao_encontrado')
                     chave, valor = next(iter(dict_arqs_find.items()))
@@ -314,6 +311,7 @@ class ImageManip:
             except Exception as e:
                 print(f'\nErro inesperado: {type(e).__name__} - {e}')
                 return None, None
+
 
 class Palvclker:
     def get_todos_dados(self, list_psm=[3, 6, 11, 12], opcao='all', conf_min=0, limit_caracter=2, scale=2, width=None, height=None, index_nonitor=1, get_img='MSS'):
