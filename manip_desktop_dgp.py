@@ -131,8 +131,10 @@ def get_img_pil(region):
 
     return img_bgr
 
+#     return dict_arqs
 def get_all_img(region):
     dict_arqs = {}
+    # Captura e conversão inicial
     if region['get_img'] == 'pil':
         dict_arqs['img'] = get_img_pil(region)
         dict_arqs['img_cv'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_RGB2BGR)
@@ -141,38 +143,26 @@ def get_all_img(region):
         dict_arqs['img'] = get_img_mss(region)
         dict_arqs['img_cv'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_BGRA2BGR)
         dict_arqs['gray'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_BGRA2GRAY)
-    # dict_arqs['img_cv'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_BGRA2BGR)
-    # dict_arqs['gray'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_BGRA2GRAY)
     scale = region.get('scale', 2)
     dict_arqs['grayClr'] = cv2.resize(dict_arqs['gray'], None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
-
-    # ===> NOVO: CLAHE para destacar o texto cinza em fundo escuro no MSS <===
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+    # 1. Otsu Thresholding Direto (Excelente para texto limpo em tela)
+    _, dict_arqs['threshOtsu'] = cv2.threshold(dict_arqs['grayClr'], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    _, dict_arqs['threshOtsuInv'] = cv2.threshold(dict_arqs['grayClr'], 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    # 2. Morfologia: Engrossa levemente as letras para não quebrar a haste do 'p' nem fechar o 'a'
+    kernel = np.ones((2, 2), np.uint8)
+    dict_arqs['threshMorph'] = cv2.morphologyEx(dict_arqs['threshOtsuInv'], cv2.MORPH_CLOSE, kernel)
+    # 3. CLAHE com Adaptive Threshold Ajustado (BlockSize maior: 21 em vez de 11)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     dict_arqs['grayClahe'] = clahe.apply(dict_arqs['grayClr'])
-
-    dict_arqs['grayEsc'] = cv2.equalizeHist(dict_arqs['grayClr'])
-    dict_arqs['grayEsc'] = cv2.GaussianBlur(dict_arqs['grayEsc'], (3, 3), 0)
-
-    img_inv = cv2.bitwise_not(dict_arqs['grayClr'])
-    dict_arqs['contrClr'] = cv2.addWeighted(img_inv, 1.5, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
-    dict_arqs['contrClr3'] = cv2.addWeighted(img_inv, 3.0, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
-    dict_arqs['contrClr6'] = cv2.addWeighted(img_inv, 6.0, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
-
-    img_inv = cv2.bitwise_not(dict_arqs['grayEsc'])
-    dict_arqs['contrEsc'] = cv2.addWeighted(img_inv, 1.5, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
-    dict_arqs['contrEsc3'] = cv2.addWeighted(img_inv, 3.0, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
-    dict_arqs['contrEsc6'] = cv2.addWeighted(img_inv, 6.0, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
-
-    _, dict_arqs['threshClr'] = cv2.threshold(dict_arqs['grayClr'], 150, 255, cv2.THRESH_BINARY)
-    _, dict_arqs['threshEsc'] = cv2.threshold(dict_arqs['grayEsc'], 150, 255, cv2.THRESH_BINARY)
-
     dict_arqs['threshAdapt'] = cv2.adaptiveThreshold(
-        dict_arqs['grayClahe'], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+        dict_arqs['grayClahe'], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 5
     )
-
-    dict_arqs['threshInvClr'] = cv2.bitwise_not(dict_arqs['threshClr'])
-    dict_arqs['threshInvEsc'] = cv2.bitwise_not(dict_arqs['threshEsc'])
-    _, dict_arqs['mask'] = cv2.threshold(dict_arqs['contrClr3'], 150, 255, cv2.THRESH_BINARY)
+    # 4. Inversões e Contraste Suave
+    dict_arqs['grayEsc'] = cv2.equalizeHist(dict_arqs['grayClr'])
+    dict_arqs['grayClrInv'] = cv2.bitwise_not(dict_arqs['grayClr'])
+    for contraste in range(2, 6, 1):
+        c_esc = cv2.addWeighted(dict_arqs['grayClrInv'], contraste, np.zeros(dict_arqs['grayClrInv'].shape, dict_arqs['grayClrInv'].dtype), 0, 0)
+        dict_arqs['contrClr'+str(contraste)] = cv2.GaussianBlur(c_esc, (3, 3), 0)
     return dict_arqs
 
 def get_dict_img(region):
@@ -274,7 +264,10 @@ class Palvclker:
             print(f'{nome_img}:', end=' ')
             for psm in list_psm:
                 print(f'{psm}', end='.')
-                dados = pytesseract.image_to_data(img_tst, config=f'--oem 3 --psm {psm}', output_type=pytesseract.Output.DICT)
+                # Adicione `-c tessedit_char_whitelist=...` nas configurações do pytesseract
+                config_tess = f'--oem 3 --psm {psm} -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+                dados = pytesseract.image_to_data(img_tst, config=config_tess, output_type=pytesseract.Output.DICT)
+                # dados = pytesseract.image_to_data(img_tst, config=f'--oem 3 --psm {psm}', output_type=pytesseract.Output.DICT)
                 for i, palv in enumerate(dados['text']):
                     try:
                         conf = int(dados['conf'][i])
@@ -342,7 +335,7 @@ if __name__ == '__main__':
     palvclker = Palvclker()
     palv = 'acotes'
     print_padao(titulo=f'Palavra a porcura: {palv}')
-    dados = palvclker.get_todos_dados(list_psm=[11], opcao='grayClahe', width=1360, height=768, get_img='pil', limit_caracter=2)
+    dados = palvclker.get_todos_dados(list_psm=[11], opcao='all', width=1360, height=768, get_img='pil', limit_caracter=2)
     list_palv = []
     encontrado = False
     for key_1, value_2 in dados.items():
