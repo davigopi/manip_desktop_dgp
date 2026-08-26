@@ -350,7 +350,7 @@ class Palvclker:
                     y = dados['top'][i]
                     w = dados['width'][i]
                     h = dados['height'][i]
-                    if nome_img != "img" and nome_img != "img_cv":
+                    if nome_img not in ['img', 'img_cv', 'gray']:
                         x = int(x / region['scale'])
                         y = int(y / region['scale'])
                         w = int(w / region['scale'])
