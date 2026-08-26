@@ -131,10 +131,8 @@ def get_img_pil(region):
 
     return img_bgr
 
-#     return dict_arqs
 # def get_all_img(region):
 #     dict_arqs = {}
-#     # Captura e conversão inicial
 #     if region['get_img'] == 'pil':
 #         dict_arqs['img'] = get_img_pil(region)
 #         dict_arqs['img_cv'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_RGB2BGR)
@@ -145,88 +143,100 @@ def get_img_pil(region):
 #         dict_arqs['gray'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_BGRA2GRAY)
 #     scale = region.get('scale', 2)
 #     dict_arqs['grayClr'] = cv2.resize(dict_arqs['gray'], None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
-#     # 1. Otsu Thresholding Direto (Excelente para texto limpo em tela)
-#     _, dict_arqs['threshOtsu'] = cv2.threshold(dict_arqs['grayClr'], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-#     _, dict_arqs['threshOtsuInv'] = cv2.threshold(dict_arqs['grayClr'], 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-#     # 2. Morfologia: Engrossa levemente as letras para não quebrar a haste do 'p' nem fechar o 'a'
-#     kernel = np.ones((2, 2), np.uint8)
-#     dict_arqs['threshMorph'] = cv2.morphologyEx(dict_arqs['threshOtsuInv'], cv2.MORPH_CLOSE, kernel)
-#     # 3. CLAHE com Adaptive Threshold Ajustado (BlockSize maior: 21 em vez de 11)
-#     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-#     dict_arqs['grayClahe'] = clahe.apply(dict_arqs['grayClr'])
-#     dict_arqs['threshAdapt'] = cv2.adaptiveThreshold(
-#         dict_arqs['grayClahe'], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 5
-#     )
-#     # # 4. Inversões e Contraste Suave
-#     # dict_arqs['grayEsc'] = cv2.equalizeHist(dict_arqs['grayClr'])
-#     # dict_arqs['grayClrInv'] = cv2.bitwise_not(dict_arqs['grayClr'])
-#     # for contraste in range(2, 6, 1):
-#     #     c_esc = cv2.addWeighted(dict_arqs['grayClrInv'], contraste, np.zeros(dict_arqs['grayClrInv'].shape, dict_arqs['grayClrInv'].dtype), 0, 0)
-#     #     dict_arqs['contrClr'+str(contraste)] = cv2.GaussianBlur(c_esc, (3, 3), 0)
-#     # return dict_arqs
-#     # 4. Inversões e Contraste Unificado (Gera contrClr e contrEsc no mesmo loop)
+
 #     dict_arqs['grayEsc'] = cv2.equalizeHist(dict_arqs['grayClr'])
-#     dict_arqs['grayClrInv'] = cv2.bitwise_not(dict_arqs['grayClr'])
-#     dict_arqs['grayEscInv'] = cv2.bitwise_not(dict_arqs['grayEsc'])
+#     dict_arqs['grayEsc'] = cv2.GaussianBlur(dict_arqs['grayEsc'], (3, 3), 0)
 
-#     for contraste in range(2, 8, 1):
-#         # Processa imagem cinza normal (contrClr)
-#         c_clr = cv2.addWeighted(dict_arqs['grayClrInv'], contraste, np.zeros(dict_arqs['grayClrInv'].shape, dict_arqs['grayClrInv'].dtype), 0, 0)
-#         dict_arqs['contrClr' + str(contraste)] = cv2.GaussianBlur(c_clr, (3, 3), 0)
+#     img_inv = cv2.bitwise_not(dict_arqs['grayClr'])
+#     dict_arqs['contrClr'] = cv2.addWeighted(img_inv, 1.5, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
+#     dict_arqs['contrClr3'] = cv2.addWeighted(img_inv, 3.0, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
+#     dict_arqs['contrClr6'] = cv2.addWeighted(img_inv, 6.0, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
 
-#         # Processa imagem equalizada (contrEsc) -> Onde o 'dme' é detectado
-#         c_esc = cv2.addWeighted(dict_arqs['grayEscInv'], contraste, np.zeros(dict_arqs['grayEscInv'].shape, dict_arqs['grayEscInv'].dtype), 0, 0)
-#         dict_arqs['contrEsc' + str(contraste)] = cv2.GaussianBlur(c_esc, (3, 3), 0)
+#     img_inv = cv2.bitwise_not(dict_arqs['grayEsc'])
+#     dict_arqs['contrEsc'] = cv2.addWeighted(img_inv, 1.5, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
+#     dict_arqs['contrEsc3'] = cv2.addWeighted(img_inv, 3.0, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
+#     dict_arqs['contrEsc6'] = cv2.addWeighted(img_inv, 6.0, np.zeros(img_inv.shape, img_inv.dtype), 0, 0)
+
+#     _, dict_arqs['threshClr'] = cv2.threshold(dict_arqs['grayClr'], 150, 255, cv2.THRESH_BINARY)
+#     _, dict_arqs['threshEsc'] = cv2.threshold(dict_arqs['grayEsc'], 150, 255, cv2.THRESH_BINARY)
+
+#     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+#     dict_arqs['grayClahe'] = clahe.apply(dict_arqs['grayClr'])
+
+#     dict_arqs['threshAdapt'] = cv2.adaptiveThreshold(
+#         dict_arqs['grayClahe'], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+#     )
+
+#     dict_arqs['threshInvClr'] = cv2.bitwise_not(dict_arqs['threshClr'])
+#     dict_arqs['threshInvEsc'] = cv2.bitwise_not(dict_arqs['threshEsc'])
+#     _, dict_arqs['mask'] = cv2.threshold(dict_arqs['contrClr3'], 150, 255, cv2.THRESH_BINARY)
+
+
+#     dict_arqs['inv_gray'] = cv2.bitwise_not(dict_arqs['grayClr'])
+#     _, dict_arqs['thresh_dark_theme'] = cv2.threshold(dict_arqs['inv_gray'], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
 
 #     return dict_arqs
+
 def get_all_img(region):
     dict_arqs = {}
 
-    # 1. Captura e conversão inicial (BGR/Cinza)
+    # Captura e conversão inicial (BGR/Cinza)
     if region['get_img'] == 'pil':
-        dict_arqs['img'] = get_img_pil(region)
-        dict_arqs['img_cv'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_RGB2BGR)
-        dict_arqs['gray'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_RGB2GRAY)
+        dict_arqs['img'] = get_img_pil(region)                                  # Print via Pillow
+        dict_arqs['img_cv'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_RGB2BGR) # RGB -> BGR
+        dict_arqs['gray'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_RGB2GRAY)  # Converte cinza
     else:
-        dict_arqs['img'] = get_img_mss(region)
-        dict_arqs['img_cv'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_BGRA2BGR)
-        dict_arqs['gray'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_BGRA2GRAY)
+        dict_arqs['img'] = get_img_mss(region)                                  # Print via MSS
+        dict_arqs['img_cv'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_BGRA2BGR)# BGRA -> BGR
+        dict_arqs['gray'] = cv2.cvtColor(dict_arqs['img'], cv2.COLOR_BGRA2GRAY) # Converte cinza
 
-    # 2. Redimensionamento (Zoom)
+    # Redimensionamento (Zoom)
     scale = region.get('scale', 2)
-    dict_arqs['grayClr'] = cv2.resize(dict_arqs['gray'], None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+    dict_arqs['grayClr'] = cv2.resize(dict_arqs['gray'], None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC) # Amplia imagem
 
-    # 3. Equalização e Suavização (EXATAMENTE COMO NO ANTERIOR)
-    dict_arqs['grayEsc'] = cv2.equalizeHist(dict_arqs['grayClr'])
-    dict_arqs['grayEsc'] = cv2.GaussianBlur(dict_arqs['grayEsc'], (3, 3), 0)
+    # Equalização e Suavização
+    dict_arqs['grayEsc'] = cv2.equalizeHist(dict_arqs['grayClr'])               # Realça contraste
+    dict_arqs['grayEsc'] = cv2.GaussianBlur(dict_arqs['grayEsc'], (3, 3), 0)     # Suaviza ruído
 
-    # 4. Inversão base para contrastes
-    dict_arqs['grayClrInv'] = cv2.bitwise_not(dict_arqs['grayClr'])
-    dict_arqs['grayEscInv'] = cv2.bitwise_not(dict_arqs['grayEsc'])
+    # Inversão base para contrastes
+    dict_arqs['grayClrInv'] = cv2.bitwise_not(dict_arqs['grayClr'])             # Inverte cinza
+    dict_arqs['grayEscInv'] = cv2.bitwise_not(dict_arqs['grayEsc'])             # Inverte equalizada
 
-    # 5. Loop dinâmico de contraste (Gera contrEsc4 identico ao anterior)
+    # Loop dinâmico de contraste e binarização (2x a 10x)
     for contraste in range(2, 11, 2):
+        # dict_arqs['contrClr'+str(contraste)] = cv2.addWeighted(dict_arqs['grayClrInv'], contraste, np.zeros(dict_arqs['grayClrInv'].shape, dict_arqs['grayClrInv'].dtype), 0, 0) # Aplica ganho Nx na cinza
+        # dict_arqs['contrEsc'+str(contraste)] = cv2.addWeighted(dict_arqs['grayEscInv'], contraste, np.zeros(dict_arqs['grayEscInv'].shape, dict_arqs['grayEscInv'].dtype), 0, 0) # Aplica ganho Nx na equalizada
+        # _, dict_arqs['mask'+str(contraste)] = cv2.threshold(dict_arqs['contrClr'+str(contraste)], 150, 255, cv2.THRESH_BINARY)                                                     # P&B com corte fixo
+        # # Aplica o ganho de contraste original
         c_clr = cv2.addWeighted(dict_arqs['grayClrInv'], contraste, np.zeros(dict_arqs['grayClrInv'].shape, dict_arqs['grayClrInv'].dtype), 0, 0)
         c_esc = cv2.addWeighted(dict_arqs['grayEscInv'], contraste, np.zeros(dict_arqs['grayEscInv'].shape, dict_arqs['grayEscInv'].dtype), 0, 0)
 
-        dict_arqs['contrClr' + str(contraste)] = cv2.GaussianBlur(c_clr, (3, 3), 0)
-        dict_arqs['contrEsc' + str(contraste)] = cv2.GaussianBlur(c_esc, (3, 3), 0)
-        _, dict_arqs['mask' + str(contraste)] = cv2.threshold(dict_arqs['contrClr' + str(contraste)], 150, 255, cv2.THRESH_BINARY)
+        # O SEGREDO: Suaviza as bordas estouradas do contraste alto (impede que 'a' vire 'e')
+        dict_arqs['contrClr'+str(contraste)] = cv2.GaussianBlur(c_clr, (3, 3), 0)
+        dict_arqs['contrEsc'+str(contraste)] = cv2.GaussianBlur(c_esc, (3, 3), 0)
 
-    # 6. CLAHE e Binarização Adaptativa (EXATAMENTE COMO NO ANTERIOR)
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-    dict_arqs['grayClahe'] = clahe.apply(dict_arqs['grayClr'])
+        _, dict_arqs['mask'+str(contraste)] = cv2.threshold(dict_arqs['contrClr'+str(contraste)], 150, 255, cv2.THRESH_BINARY)
+
+    _, dict_arqs['threshDarkTheme'] = cv2.threshold(dict_arqs['grayClrInv'], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU) # Binarização automática para Dark Mode
+
+    # Binarização (P&B) Fixa
+    _, dict_arqs['threshClr'] = cv2.threshold(dict_arqs['grayClr'], 150, 255, cv2.THRESH_BINARY) # Corte 150 em cinza
+    _, dict_arqs['threshEsc'] = cv2.threshold(dict_arqs['grayEsc'], 150, 255, cv2.THRESH_BINARY) # Corte 150 em equalizada
+
+    # Inversões de Threshold
+    dict_arqs['threshInvClr'] = cv2.bitwise_not(dict_arqs['threshClr'])         # Inverte P&B cinza
+    dict_arqs['threshInvEsc'] = cv2.bitwise_not(dict_arqs['threshEsc'])         # Inverte P&B equalizada
+
+    # CLAHE e Binarização Adaptativa
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))                 # Filtro regional
+    dict_arqs['grayClahe'] = clahe.apply(dict_arqs['grayClr'])                  # Aplica CLAHE
     dict_arqs['threshAdapt'] = cv2.adaptiveThreshold(
         dict_arqs['grayClahe'], 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
-    )
-
-    # 7. Adicionais do código novo (Otsu e Morfologia) sem alterar os anteriores
-    _, dict_arqs['threshOtsu'] = cv2.threshold(dict_arqs['grayClr'], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    _, dict_arqs['threshOtsuInv'] = cv2.threshold(dict_arqs['grayClr'], 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    kernel = np.ones((2, 2), np.uint8)
-    dict_arqs['threshMorph'] = cv2.morphologyEx(dict_arqs['threshOtsuInv'], cv2.MORPH_CLOSE, kernel)
+    )                                                                           # P&B por vizinhança
 
     return dict_arqs
+
 
 def get_dict_img(region):
     dict_arqs = {}
@@ -272,17 +282,14 @@ class ImageManip:
                         if arq_find.shape[0] > dict_arqs['img_gray'].shape[0] or \
                         arq_find.shape[1] > dict_arqs['img_gray'].shape[1]:
                             continue
-                        escala_atual = 1.0 if nome_arq in ['img', 'img_cv', 'gray'] else region.get('scale', 2)
-                        res = cv2.matchTemplate(dict_arqs[nome_arq], arq_find, cv2.TM_CCOEFF_NORMED)
+                        res = cv2.matchTemplate(dict_arqs['img_gray'], arq_find, cv2.TM_CCOEFF_NORMED)
                         locais = np.where(res >= confidence)
                         if len(locais[0]) > 0:
                             x, y = locais[1][0], locais[0][0]
                             h, w = arq_find.shape[:2]
-                            x_real = (x + w // 2) / escala_atual
-                            y_real = (y + h // 2) / escala_atual
-                            x_img = int(region["left"] + x_real)
-                            y_img = int(region["top"] + y_real)
-                            print_padao(texto_1=f'Imagem {palv} encontrada na img {nome_arq} valores X: {x_img} e Y:{y_img}')
+                            x_img = int(region["left"] + x + w // 2)
+                            y_img = int(region["top"] + y + h // 2)
+                            print_padao(texto_1=f'Imagem {palv} encontra na img {palv} valores X: {x_img} e Y:{y_img}')
                             return x_img, y_img
                         salve_img(arq_find, palv+'_nao_encontrado')
                     chave, valor = next(iter(dict_arqs_find.items()))
@@ -330,10 +337,7 @@ class Palvclker:
             print(f'{nome_img}:', end=' ')
             for psm in list_psm:
                 print(f'{psm}', end='.')
-                # Adicione `-c tessedit_char_whitelist=...` nas configurações do pytesseract
-                config_tess = f'--oem 3 --psm {psm} -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-                dados = pytesseract.image_to_data(img_tst, config=config_tess, output_type=pytesseract.Output.DICT)
-                # dados = pytesseract.image_to_data(img_tst, config=f'--oem 3 --psm {psm}', output_type=pytesseract.Output.DICT)
+                dados = pytesseract.image_to_data(img_tst, config=f'--oem 3 --psm {psm}', output_type=pytesseract.Output.DICT)
                 for i, palv in enumerate(dados['text']):
                     try:
                         conf = int(dados['conf'][i])
@@ -401,7 +405,7 @@ if __name__ == '__main__':
     palvclker = Palvclker()
     palv = 'dme'
     print_padao(titulo=f'Palavra a porcura: {palv}')
-    dados = palvclker.get_todos_dados(list_psm=[6, 11], opcao='all', width=1360, height=768, get_img='pil', limit_caracter=2)
+    dados = palvclker.get_todos_dados(list_psm=[3, 6, 11, 12], opcao='all', width=1360, height=768, get_img='pil', limit_caracter=2)
     list_palv = []
     encontrado = False
     for key_1, value_2 in dados.items():
